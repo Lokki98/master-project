@@ -606,13 +606,6 @@ plot(my_grf_plot)
 ggsave("/user/ziqitang/data_ziqi/my_plot_grf.png", plot = my_grf_plot, width = 8, height = 6, dpi = 300)
 
 
-
-
-
-
-
-
-
 predictions_gwr <- gwr_model$SDF$pred 
 actual_values <- combined_data$shannon_index
 tss <- sum((actual_values - mean(actual_values))^2)
@@ -663,7 +656,7 @@ ggplot(data = combined_data, aes(x = x, y = y, fill = r_squared)) +
     legend.title = element_text(size = 12),
     legend.text = element_text(size = 10)
   )
-#修正的r squared value of the map
+#r squared value of the map
 # Correct assignment of the ggplot object
 R_squared_gwr <- ggplot(data = combined_data, aes(x = x, y = y, fill = r_squared)) +
   geom_tile() +  # Use tiles for a heatmap-like plot
@@ -1170,10 +1163,6 @@ plot_gwr <- ggplot(combined_data_df, aes(x = x_coord, y = y_coord, fill = predic
     axis.title = element_blank(),
     legend.position = "none"
   )
-
-
-print(plot_gwr)
-
 
 combined_data_df <- as.data.frame(combined_data)
 combined_data_df$x_coord <- combined_data$x
