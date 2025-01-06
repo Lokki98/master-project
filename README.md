@@ -1,6 +1,6 @@
 # Spatial Patterns of Species Diversity in the Cape Floristic Region
 
-This repository contains the implementation and analysis of spatial patterns of species diversity (Shannon Index) within the Cape Floristic Region, South Africa, using spectral variation analysis. The study evaluates the relationships between environmental factors (NDVI, temperature, elevation, and aspect) and alpha diversity through four different machine learning models:
+This repository contains the implementation and analysis of spatial patterns of species diversity (Shannon Index) within the Cape Floristic Region, South Africa, using spectral variation analysis. The study evaluates the relationships between environmental factors (NDVI, temperature, elevation, and aspect) and alpha diversity through four different models:
 
 1. **Ordinary Least Squares (OLS)**
 2. **Geographically Weighted Regression (GWR)**
