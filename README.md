@@ -16,7 +16,7 @@ This repository contains the implementation and analysis of spatial patterns of 
 This work demonstrates the value of geographical statistical methods in biodiversity monitoring, highlighting the importance of spatial analysis in understanding ecological patterns.
 
 
-## Image Gallery
+## Maps Of Results
 
 <div align="center">
   <img width="345" alt="f2d62c74bc173a589aba04019844eab" src="https://github.com/user-attachments/assets/fb7e60fe-2330-4a7f-a7e2-2018560baf90" /><br>
