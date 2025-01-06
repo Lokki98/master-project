@@ -43,24 +43,22 @@ library(tmap)
 library(viridis)
 library(ggmap)
 library(tmap)
-library(ggplot2)
 library(gridExtra)
-#alpha diversity layer
+
+#data
 dependent_raster <- rast("/user/ziqitang/data_ziqi/clipped_shannon.tif")
 dependent_clean <- classify(dependent_raster, cbind(0, NA))
 plot(dependent_clean, main = "Alpha Diversity")
-
 total_cells <- ncell(dependent_raster)
 cat("Total number of cells:", total_cells, "\n")
 
-
+#
 dependent_clean <- project(dependent_clean, "EPSG:4326")
 dependent_df <- as.data.frame(dependent_clean, xy = TRUE, na.rm = TRUE)
 colnames(dependent_df) <- c("x", "y", "alpha_diversity") 
 res(dependent_clean)
 # Reproject the raster to a UTM projection (adjust EPSG code as needed)
 dependent_clean_proj <- project(dependent_clean, "EPSG:32633")
-
 res(dependent_clean_proj)
 cell_area <- prod(res(dependent_clean_proj)) 
 non_na_cells <- sum(!is.na(values(dependent_clean_proj)))
@@ -69,64 +67,6 @@ total_area_km2 <- total_area / 1e6      # Area in km²
 cat("Total Area:\n")
 cat("In square meters:", total_area, "\n")
 cat("In square kilometers:", total_area_km2, "\n")
-
-
-tmap_mode("view")
-tm_shape(dependent_clean) +
-  tm_raster(
-    col = "clipped_shannon",  
-    palette = "viridis",      
-    style = "cont",          
-    title = "Prediction"      
-  ) +
-  tm_basemap(server = "Esri.WorldImagery") +  
-  tm_layout(
-    legend.outside = TRUE,           
-    legend.outside.position = "right",
-    legend.title.size = 1.2,         
-    legend.text.size = 0.8,          
-    title = "Alpha Diversity Map",   
-    title.size = 1.5,                
-    frame = FALSE                    
-  )
-library(leaflet)
-
-leaflet() %>%
-  addTiles() %>%
-  addProviderTiles(providers$Esri.WorldImagery) %>%
-  addRasterImage(dependent_clean, colors = viridis::viridis(100), opacity = 0.8) %>%
-  addLegend(pal = colorNumeric(viridis::viridis(100), values(dependent_clean)), values = values(dependent_clean), title = "Prediction")
-
-min_value <- 1.0
-max_value <- 3.0
-
-custom_pal <- colorNumeric(
-  palette = c("#440154", "#3b528b", "#21908c", "#5dc863", "#fde725"),  # 颜色顺序不变
-  domain = c(max_value, min_value),  # 反转数值范围
-  na.color = "transparent"  # 缺失值透明
-)
-
-leaflet() %>%
-  addTiles() %>%
-  addProviderTiles(providers$Esri.WorldImagery) %>%
-  addRasterImage(dependent_clean, colors = custom_pal, opacity = 0.8) %>%
-  addLegend(
-    pal = custom_pal, 
-    values = c(min_value, max_value),  # 设置数值范围从 1 到 3
-    title = NULL,  # 不显示标题
-    labFormat = labelFormat(
-      transform = function(x) x  # 直接显示原始值，不需要额外变换
-    ),
-    opacity = 1,
-    position = "bottomright"  # 设置颜色条位置为右下角
-  )
-
-
-
-
-
-
-
 
 
 # Load and clean the raster
@@ -175,12 +115,12 @@ ggplot(ndvi_df, aes(x = x, y = y, fill = ndvi_value)) +
     title = "NDVI Map"
   ) +
   theme(
-    panel.grid = element_blank(),       # Remove gridlines
-    plot.title = element_text(hjust = 0.5, size = 16),  # Center and adjust title size
-    axis.text = element_blank(),        # Remove all axis text
-    axis.ticks = element_blank(),       # Remove axis ticks
-    axis.line = element_blank(),        # Remove axis lines
-    axis.title = element_blank()        # Remove axis titles
+    panel.grid = element_blank(),       
+    plot.title = element_text(hjust = 0.5, size = 16),  
+    axis.text = element_blank(),        
+    axis.ticks = element_blank(),      
+    axis.line = element_blank(),       
+    axis.title = element_blank()      
   )
 ggsave("/user/ziqitang/data_ziqi/NDVI_1124.png", width = 10, height = 8, dpi = 300)
 
@@ -884,27 +824,17 @@ for (var in variables) {
     data = combined_data,
     adapt = gwr_bandwidth  # Use adaptive bandwidth
   )
-  
-  # Extract coefficients
   combined_data[[paste0("coef_", var)]] <- gwr_model$SDF[[var]]
-  
-  # Step 2: Create a Coefficient Raster
   coef_raster <- rasterFromXYZ(as.data.frame(combined_data)[, c("x", "y", paste0("coef_", var))])
   crs(coef_raster) <- proj4string(combined_data)  # Set CRS from spatial data
-  
-  # Step 3: Convert Raster to Data Frame for Plotting
   coef_df <- as.data.frame(coef_raster, xy = TRUE, na.rm = TRUE)
   colnames(coef_df) <- c("x", "y", "coef_value")  # Rename columns
-  
-  # Categorize values into intervals
   coef_df$coef_category <- cut(
     coef_df$coef_value,
     breaks = c(-Inf, -1, -0.5, 0.5, 1, Inf),  # Define intervals
     labels = c("< -1", "-1 to -0.5", "-0.5 to 0.5", "0.5 to 1", "> 1"),
     include.lowest = TRUE
   )
-  
-  # Step 4: Plot Coefficients Using ggplot2
   plot_title <- paste("GWR Coefficient for", variable_names[var])  # Dynamic title based on variable
   
   gg <- ggplot(coef_df, aes(x = x, y = y, fill = coef_category)) +
@@ -982,16 +912,11 @@ adjusted_r_squared_ols <- ols_summary$adj.r.squared
 rmse_ols <- sqrt(mean(residuals(ols_model)^2))
 aic_ols <- AIC(ols_model)
 
-# Print regression summary details
 print(paste("OLS R-squared:", round(r_squared_ols, 3)))
 print(paste("OLS Adjusted R-squared:", round(adjusted_r_squared_ols, 3)))
 print(paste("OLS RMSE:", round(rmse_ols, 3)))
 print(paste("OLS AIC:", round(aic_ols, 3)))
-
-# 生成 OLS 模型的预测值
 combined_data$predicted_shannon_ols <- predict(ols_model, newdata = combined_data)
-
-# 绘制散点图，实际值 vs. 预测值
 library(ggplot2)
 #title = "Scatter Plot of Actual vs Predicted OLS Values",
 ggplot(combined_data, aes(x = predicted_shannon_ols, y = shannon_index)) +
@@ -1001,9 +926,9 @@ ggplot(combined_data, aes(x = predicted_shannon_ols, y = shannon_index)) +
          y = "Actual Values (Shannon Index)") +
   theme_minimal() +
   theme(
-    plot.title = element_text(hjust = 0.5),  # 标题居中
-    panel.grid = element_blank(),            # 移除网格线
-    axis.line = element_line(color = "black") # 显示X和Y轴
+    plot.title = element_text(hjust = 0.5),  
+    panel.grid = element_blank(),           
+    axis.line = element_line(color = "black") 
   )
 
 
@@ -1025,11 +950,11 @@ coef_table <- data.frame(
 
 
 
-# 检查是否存在缺失值
-summary(combined_data@data)
-any(is.na(combined_data@data))  # 如果返回 TRUE，则存在缺失值
 
-# 去除缺失值
+summary(combined_data@data)
+any(is.na(combined_data@data))  
+
+
 combined_data <- combined_data[complete.cases(combined_data@data), ]
 
 
@@ -1078,35 +1003,35 @@ print(paste("GRF R-squared:", r_squared_grf))
 
 library(ggplot2)
 
-# 创建数据框，包括实际值和预测值
+
 combined_data_df <- data.frame(
-  actual_shannon = actual_values,         # 实际值
-  predicted_shannon_grf = predictions_grf # GRF模型预测值
+  actual_shannon = actual_values,         
+  predicted_shannon_grf = predictions_grf
 )
 
-# 绘制散点图
+
 ggplot(combined_data_df, aes(x = predicted_shannon_grf, y = actual_shannon)) +
-  geom_point(color = "black") +  # 绘制散点，设置颜色
-  geom_abline(intercept = 0, slope = 1, color = "red", linetype = "dashed") +  # 添加45度参考线
+  geom_point(color = "black") + 
+  geom_abline(intercept = 0, slope = 1, color = "red", linetype = "dashed") + 
   labs(
-    x = "Predicted Values (GRF)",          # X轴标签
-    y = "Actual Values (Shannon Index)",   # Y轴标签
-    title = "Scatter Plot: GRF Predictions vs Actual Values"  # 标题
+    x = "Predicted Values (GRF)",          
+    y = "Actual Values (Shannon Index)",   
+    title = "Scatter Plot: GRF Predictions vs Actual Values"  
   ) +
-  theme_minimal() +  # 使用简洁主题
+  theme_minimal() +  
   theme(
-    plot.title = element_text(hjust = 0.5, size = 14),  # 标题居中并调整大小
-    panel.grid = element_blank(),                     # 移除背景网格线
-    axis.line = element_line(color = "black"),        # 添加X和Y轴线条
-    axis.text = element_text(size = 10),              # 坐标轴刻度字体大小
-    axis.title = element_text(size = 12)              # 坐标轴标签字体大小
+    plot.title = element_text(hjust = 0.5, size = 14),  
+    panel.grid = element_blank(),                    
+    axis.line = element_line(color = "black"),       
+    axis.text = element_text(size = 10),             
+    axis.title = element_text(size = 12)              
   )
-# 假设 x_range 和 y_range 已经事先设置好
+
 x_range <- range(predictions_grf, na.rm = TRUE)
 y_range <- range(actual_values, na.rm = TRUE)
 print(predictions_grf)
 print(actual_values)
-# 计算回归线方程和R²值
+
 lm_fit_grf <- lm(actual_values ~ predictions_grf)
 r2_grf <- summary(lm_fit_grf)$r.squared
 equation_grf <- sprintf("y = %.4fx + %.3f\nR² = %.3f", 
@@ -1114,39 +1039,26 @@ equation_grf <- sprintf("y = %.4fx + %.3f\nR² = %.3f",
                         coef(lm_fit_grf)[1],
                         r2_grf)
 
-# 绘制GRF模型散点图
+
 my_grf_plot <- ggplot(combined_data, aes(x = predictions_grf, y = actual_values)) +
   geom_point(color = "black") +
-  geom_abline(intercept = 0, slope = 1, color = "red", linetype = "dashed") +  # 45度线
-  geom_smooth(method = "lm", color = "black", se = FALSE) +  # 添加回归线
+  geom_abline(intercept = 0, slope = 1, color = "red", linetype = "dashed") + 
+  geom_smooth(method = "lm", color = "black", se = FALSE) +  
   annotate("text", 
            x = x_range[1], 
            y = y_range[2],
            label = equation_grf,
            hjust = 0,
-           vjust = 1) +  # 添加回归方程和R²值
+           vjust = 1) +  
   labs(x = "Predicted Values (GRF)",
        y = "Actual Values (Shannon Index)") +
-  coord_cartesian(xlim = x_range, ylim = y_range) +  # 确保坐标轴范围一致
+  coord_cartesian(xlim = x_range, ylim = y_range) +  
   theme_minimal() +
   theme(
     plot.title = element_text(hjust = 0.5),
-    panel.grid = element_blank(),       # 移除背景网格线
-    axis.line = element_line(color = "black")  # 添加坐标轴线
+    panel.grid = element_blank(),       
+    axis.line = element_line(color = "black") 
   )
-
-# 显示图形
-plot(my_grf_plot)
-
-
-
-
-
-
-
-library(spgwr)
-library(caret)
-
 
 set.seed(123)
 folds <- createFolds(combined_data$shannon_index, k = 5)
@@ -1183,10 +1095,10 @@ rmse_ols <- sqrt(residuals_squared_mean)
 print(rmse_ols)
 actual_values <- combined_data$shannon_index
 predicted_ols <- predict(ols_model, newdata = combined_data)
-# 计算 RSS 和 TSS
-rss <- sum((actual_values - predicted_ols)^2)  # 残差平方和
-tss <- sum((actual_values - mean(actual_values))^2)  # 总平方和
-# 计算 R²
+
+rss <- sum((actual_values - predicted_ols)^2)  
+tss <- sum((actual_values - mean(actual_values))^2)  
+
 r_squared <- 1 - (rss / tss)
 print(paste("Global R² for OLS Model:", r_squared))
 plot_data_ols <- data.frame(
@@ -1303,12 +1215,6 @@ max_value <- max(c(
   max(combined_data_df$predicted_shannon_rf, na.rm = TRUE)
 ))
 
-
-library(ggplot2)
-library(viridis)
-library(randomForest)
-# 检查列名
-print(colnames(combined_data))
 colnames(combined_data) <- make.names(colnames(combined_data), unique = TRUE)
 combined_data_df <- as.data.frame(combined_data)
 print(colnames(combined_data_df))
@@ -1352,21 +1258,18 @@ plot_ols <- ggplot(combined_data_df, aes(x = x_coord, y = y_coord, fill = predic
     axis.ticks = element_blank(),
     axis.line = element_blank(),
     axis.title = element_blank(),
-    legend.position = "none" # 隐藏颜色条
+    legend.position = "none" 
   )
 
-
-# 确保 combined_data_df 包含 x_coord 和 y_coord
 combined_data_df <- as.data.frame(combined_data)
 combined_data_df$x_coord <- combined_data$x
 combined_data_df$y_coord <- combined_data$y
-# 提取预测值
 combined_data_df$predicted_shannon_gwr <- gwr_model$SDF$pred
 
 
 
 
-# 定义颜色范围
+
 min_value <- min(combined_data_df$predicted_shannon_gwr, na.rm = TRUE)
 max_value <- max(combined_data_df$predicted_shannon_gwr, na.rm = TRUE)
 
@@ -1389,24 +1292,22 @@ plot_gwr <- ggplot(combined_data_df, aes(x = x_coord, y = y_coord, fill = predic
     legend.position = "none"
   )
 
-# 显示绘图
+
 print(plot_gwr)
 
-# 确保 combined_data_df 包含 x_coord 和 y_coord
+
 combined_data_df <- as.data.frame(combined_data)
 combined_data_df$x_coord <- combined_data$x
 combined_data_df$y_coord <- combined_data$y
 
-# 将 predictions_grf 添加到 combined_data_df
 combined_data_df$predicted_shannon_grf <- predictions_grf
 
-# 检查结果
 print(head(combined_data_df))
 
 plot_grf <- ggplot(combined_data_df, aes(x = x_coord, y = y_coord, fill = predicted_shannon_grf)) +
   geom_tile() +
   scale_fill_gradientn(colors = c("#440154", "#3b528b", "#21908c", "#5dc863", "#fde725"),
-                       limits = c(min(predictions_grf), max(predictions_grf))) +  # 动态设置颜色范围
+                       limits = c(min(predictions_grf), max(predictions_grf))) +  
   coord_fixed() +
   labs(title = "GRF") +
   theme_minimal() +
@@ -1417,44 +1318,44 @@ plot_grf <- ggplot(combined_data_df, aes(x = x_coord, y = y_coord, fill = predic
     axis.ticks = element_blank(),
     axis.line = element_blank(),
     axis.title = element_blank(),
-    legend.position = "none"  # 隐藏颜色条
+    legend.position = "none" 
   )
 plot(plot_grf)
 library(cowplot)
 
-# 创建一个空的数据框，仅用于生成颜色条
+
 dummy_data <- data.frame(y = seq(1, 3, length.out = 100))
 
 colorbar <- ggplot(dummy_data, aes(x = 1, y = y, fill = y)) +
-  geom_tile(alpha = 0) +  # 设置透明度为 0，使 geom_tile 看不到
+  geom_tile(alpha = 0) + 
   scale_fill_gradientn(
-    colors = c("#440154", "#3b528b", "#21908c", "#5dc863", "#fde725"),  # 自定义颜色
-    limits = c(1, 3),  # 固定颜色范围
-    name = NULL  # 去除标题
+    colors = c("#440154", "#3b528b", "#21908c", "#5dc863", "#fde725"),  
+    limits = c(1, 3),  
+    name = NULL 
   ) +
-  theme_void() +  # 移除背景和多余的轴
+  theme_void() +  
   guides(
     fill = guide_colorbar(
-      barwidth = 1,       # 设置颜色条宽度
-      barheight = 15      # 设置颜色条高度
+      barwidth = 1,      
+      barheight = 15     
     )
   ) +
   theme(
-    legend.position = "right",      # 确保颜色条在右侧
-    legend.title = element_blank(), # 删除标题
-    legend.text = element_text(size = 10)  # 设置刻度字体大小
+    legend.position = "right",      
+    legend.title = element_blank(), 
+    legend.text = element_text(size = 10)  
   ) 
-# 显示颜色条
+
 plot(colorbar)
 
 
 
 final_plot <- plot_grid(
-  plot_ols,  # 没有颜色条
-  plot_gwr,  # 没有颜色条
-  plot_rf,   # 没有颜色条
+  plot_ols,  
+  plot_gwr,  
+  plot_rf,  
   plot_grf,
-  colorbar,  # 仅这里保留颜色条
+  colorbar,  
   ncol = 4, 
   rel_widths = c(1, 1, 1.1, 0.3)
 )
@@ -1464,7 +1365,6 @@ plot(final_plot)
 
 
 
-# 创建颜色条（仅单独保留颜色条）
 colorbar <- ggplot() +
   scale_fill_gradientn(
     colors = c("#440154", "#3b528b", "#21908c", "#5dc863", "#fde725"), 
@@ -1474,23 +1374,20 @@ colorbar <- ggplot() +
   theme_void() +
   theme(legend.position = "right")
 
-# 使用 plot_grid 组合上下左右各两个图
 final_plot <- plot_grid(
-  plot_grid(plot_ols, plot_gwr, ncol = 2, align = "v"),  # 左上和右上
-  plot_grid(plot_rf, plot_grf, ncol = 2, align = "v"),  # 左下和右下
-  ncol = 1,  # 两行布局
-  rel_heights = c(1, 1)  # 每行高度相同
+  plot_grid(plot_ols, plot_gwr, ncol = 2, align = "v"),  
+  plot_grid(plot_rf, plot_grf, ncol = 2, align = "v"), 
+  ncol = 1,  
+  rel_heights = c(1, 1) 
 )
 
-# 添加颜色条
 final_plot_with_colorbar <- plot_grid(
   final_plot, 
   colorbar, 
   ncol = 2, 
-  rel_widths = c(0.9, 0.1)  # 左右宽度比例
+  rel_widths = c(0.9, 0.1)  
 )
 
-# 显示最终组合图
 print(final_plot_with_colorbar)
 ggsave("/user/ziqitang/data_ziqi/comparison_with_shared_colorbar.png", plot = final_plot_with_colorbar, width = 12, height = 8, dpi = 300)
 
