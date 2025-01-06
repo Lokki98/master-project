@@ -13,16 +13,14 @@ library(ggplot2)
 library(gridExtra)
 library(stars)
 library(ggspatial)
-
+library(spgwr)
+library(raster)
+library(raster)
 
 data_directory1 <- "/user/ziqitang/Documents/EMIT_L2A_RFL_001_20230119T114235_2301907_004_reflectance"
 NameRaster1 <- 'EMIT_L2A_RFL_001_20230119T114235_2301907_004_reflectance'
 raster_file1 <- file.path(data_directory1, NameRaster1)
 hyperspectral_image <- brick(raster_file1)
-print(hyperspectral_image)
-
-library(raster)
-
 shannon_index <- function(pixel_values) {
   pixel_values <- pixel_values / sum(pixel_values, na.rm = TRUE) 
   pixel_values <- pixel_values[pixel_values > 0] 
@@ -30,18 +28,9 @@ shannon_index <- function(pixel_values) {
 }
 
 shannon_diversity <- calc(hyperspectral_image, fun = shannon_index)
-
 png("shannon_diversity.png", width = 800, height = 600)
 plot(shannon_diversity, main = "Shannon Index for Spectral Diversity")
 dev.off()
-
-
-
-
-
-
-
-
 
 hdr_file1 <- get_HDR_name(raster_file1, showWarnings = FALSE)
 read_ENVI_header(hdr_file1)
@@ -138,9 +127,6 @@ plot(raster_image1,main="Distribution map of BetaDiversity of the area")
 raster_SpectralSpecies <- rast('/user/ziqitang/Documents/tzq/output/EMIT_L2A_RFL_001_20230119T114235_2301907_004_reflectance/SPCA/SpectralSpecies/SpectralSpecies_Distribution')
 plot(raster_SpectralSpecies,main="SpectralSpecies_Distribution")
 
-
-
-
 landcover_data <- rast("/user/ziqitang/Documents/SA_NLC_2022_GEO.tif/SA_NLC_2022_GEO.tif")
 landcover_data_projected <- terra::project(landcover_data, raster_image1)
 lon_min <- 18.3
@@ -173,9 +159,6 @@ plot(fire_age_cropped,main='Spatial Distribution of Fire Age (Cropped Area)')
 # plot(cropped_fire_age_intersection,main='cropped raster of fire age')
 
 
-library(spgwr)
-library(raster)
-
 fire_age_cropped <- raster(fire_age_cropped)
 points_raster1 <- rasterToPoints(fire_age_cropped, spatial = TRUE)  # independent
 points_raster2 <- rasterToPoints(raster(cropped_raster1), spatial = TRUE)  # dependent response y
@@ -197,11 +180,5 @@ head(data)
 bandwidth <- gwr.sel(response ~ predictor, data = data, coords = cbind(data$x, data$y))
 gwr_model <- gwr(response ~ predictor, data = data, bandwidth = bandwidth, coords = cbind(data$x, data$y))
 summary(gwr_model)
-
-
-
-
-
-
 
 
