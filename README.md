@@ -7,38 +7,35 @@ This repository contains the implementation and analysis of spatial patterns of 
 3. **Random Forest (RF)**
 4. **Geographically Random Forest (GRF)**
 
-# Data Description
-Satellite Imagery Description
+# Data Description  
 
-Description: The satellite imagery was sourced from the EMIT L2A product, acquired on January 19, 2023, with a spatial resolution of 60x60 meters.
+## Satellite Imagery  
+- **Source**: EMIT L2A product  
+- **Acquisition Date**: January 19, 2023  
+- **Spatial Resolution**: 60x60 meters  
+- **Description**: Captured using the EMIT imaging spectrometer, installed on the International Space Station in 2022, to collect hyperspectral data across Earth's sunlit regions.  
 
-Digital Elevation Model (DEM)
+## Digital Elevation Model (DEM)  
+- **Source**: Copernicus satellite data  
+- **Description**: Generated to represent terrain elevation.  
 
-Source: Copernicus satellite data
-Description: The DEM was generated using Copernicus data to represent the terrain elevation.
+## Topographic Position Index (TPI)  
+- **Calculation**: Derived from elevation data using QGIS software.  
 
-Topographic Position Index (TPI)
+## Mean Daily Air Temperature (TAS)  
+- **Source**: CHELSA database (Climatologies at High Resolution for Earth's Land Surface Areas)  
+- **Description**: Represents the mean daily air temperature across the study region.  
 
-Calculation: Derived from elevation data using QGIS software.
+## Fire Age Dataset  
+- **Description**: Records the time elapsed since the most recent fire event for each spatial pixel.  
 
-Mean Daily Air Temperature (TAS)
+## Normalized Difference Vegetation Index (NDVI)  
+- **Source**: MODIS NDVI data  
+- **Description**: Indicates vegetation health and coverage using remote sensing data.  
 
-Source: CHELSA database (Climatologies at High Resolution for Earth's Land Surface Areas).
-Description: Represents mean daily air temperature values across the region.
-
-Fire Age Dataset
-
-Description: Records the time elapsed since the most recent fire event for each spatial pixel.
-
-Normalized Difference Vegetation Index (NDVI)
-
-Source: MODIS NDVI data.
-Description: Indicates vegetation health and coverage using remote sensing data.
-
-Aspect Data
-
-Derived From: Digital Elevation Model (DEM).
-Description: Represents the direction of slope (e.g., north, south) based on elevation.
+## Aspect Data  
+- **Derived From**: Digital Elevation Model (DEM)  
+- **Description**: Represents the slope direction (e.g., north, south) based on elevation.  
 
 ## Key Findings
 - Coastal areas show higher alpha diversity due to favorable environmental conditions.
