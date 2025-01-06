@@ -1,3 +1,4 @@
+#libraries
 install.packages("spgwr")
 install.packages("terra")
 install.packages("car")
@@ -52,12 +53,11 @@ plot(dependent_clean, main = "Alpha Diversity")
 total_cells <- ncell(dependent_raster)
 cat("Total number of cells:", total_cells, "\n")
 
-#
+#projection analysis
 dependent_clean <- project(dependent_clean, "EPSG:4326")
 dependent_df <- as.data.frame(dependent_clean, xy = TRUE, na.rm = TRUE)
 colnames(dependent_df) <- c("x", "y", "alpha_diversity") 
 res(dependent_clean)
-# Reproject the raster to a UTM projection (adjust EPSG code as needed)
 dependent_clean_proj <- project(dependent_clean, "EPSG:32633")
 res(dependent_clean_proj)
 cell_area <- prod(res(dependent_clean_proj)) 
@@ -83,7 +83,7 @@ alpha_moran_result <- moran.test(alpha_df$layer, alpha_listw)
 print(alpha_moran_result)
 crs_dependent <- crs(dependent_clean)
 
-#ndvi independent variable1
+#ndvi-independent variable1
 independent_raster0 <- rast("/user/ziqitang/data_ziqi/true_ndvi.tif") 
 independent_raster0 <- project(independent_raster0, crs(dependent_clean))
 independent0_resampled <- resample(independent_raster0, dependent_clean, method = "bilinear")
@@ -123,56 +123,6 @@ ggplot(ndvi_df, aes(x = x, y = y, fill = ndvi_value)) +
     axis.title = element_blank()      
   )
 ggsave("/user/ziqitang/data_ziqi/NDVI_1124.png", width = 10, height = 8, dpi = 300)
-
-#Moran I test under randomisation
-#data:  ndvi_df$layer  
-#weights: ndvi_listw    
-
-#Moran I statistic standard deviate = 42.675, p-value < 2.2e-16
-#alternative hypothesis: greater
-#sample estimates:
-#  Moran I statistic       Expectation          Variance 
-#0.8604746167     -0.0008503401      0.0004073687 
-
-
-raster_shannon_clean <- classify(dependent_clean, cbind(0, NA))
-plot(raster_shannon_clean, main = "Map of shannon index")
-#TAS independent variable
-independent_raster2 <- rast("/user/ziqitang/data_ziqi/true_tas.tif")
-raster_true_tas <- classify(independent_raster2, cbind(0, NA))
-plot(raster_true_tas, main = "Map of true_tas")
-true_tas_resampled <- resample(raster_true_tas,raster_shannon_clean, method = "bilinear")
-plot(true_tas_resampled,main='true_tas_resampled')
-combined_mask_tas <- mask(true_tas_resampled,raster_shannon_clean)
-plot(combined_mask_tas, main = "combined_mask_tas")
-combined_independent2 <- mask(true_tas_resampled,combined_mask_tas)
-plot(combined_independent2, main = "TAS")
-
-tas_df <- as.data.frame(combined_independent2, xy = TRUE, na.rm = TRUE)
-colnames(tas_df) <- c("x", "y", "tas_value")
-ggplot(tas_df, aes(x = x, y = y, fill = tas_value)) +
-  geom_tile() +
-  scale_fill_viridis_c(
-    name = NULL,         
-    option = "C",          
-    guide = guide_colorbar(barwidth = 1, barheight = 15)  
-  ) +
-  theme_minimal() +
-  coord_fixed() +
-  labs(
-    title = "Surface Air Temperature (degree Celsius)"
-  ) +
-  theme(
-    panel.grid = element_blank(),       # Remove gridlines
-    plot.title = element_text(hjust = 0.5, size = 16),  # Center the title
-    axis.text = element_blank(),        # Remove axis numeric labels
-    axis.ticks = element_blank(),       # Remove axis ticks
-    axis.line = element_blank(),        # Remove axis lines
-    axis.title = element_blank()        # Remove axis titles
-  )
-ggsave("/user/ziqitang/data_ziqi/TAS_1124.png", width = 10, height = 8, dpi = 300)
-
-
 
 #dem/elevation independent variable
 independent_raster3 <- rast("/user/ziqitang/data_ziqi/true_dem.tif") 
@@ -256,7 +206,7 @@ ggsave("/user/ziqitang/data_ziqi/TPI_1124.png", width = 10, height = 8, dpi = 30
 
 
 
-# aspect independent variable66
+# aspect-independent variable66
 independent_raster66 <- rast("/user/ziqitang/data_ziqi/true_aspect_area.tif") 
 independent66_resampled <- resample(independent_raster66, dependent_clean, method = "bilinear")
 combined_mask66 <- mask(independent66_resampled,dependent_clean)
@@ -297,7 +247,7 @@ ggplot(aspect_df, aes(x = x, y = y, fill = aspect_value)) +
 ggsave("/user/ziqitang/data_ziqi/ASPECT_1124.png", width = 10, height = 8, dpi = 300)
 
 
-# fire age  independent variable5
+# fire age-independent variable5
 true_temp_fireAge <- rast("/user/ziqitang/data_ziqi/years_since_fire.tif")
 raster_true_fireAge <- classify(true_temp_fireAge, cbind(0, NA))
 crs_fireAge <- crs(raster_true_fireAge)
@@ -373,10 +323,6 @@ independent_df66 <- as.data.frame(combined_independent66, xy = TRUE, na.rm = TRU
 independent_df66_cell_count <- ncell(independent_df66)
 print(independent_df66_cell_count)
 
-
-
-
-
 # Define a function to summarize raster data
 summarize_raster <- function(raster, name) {
   values <- values(raster, na.rm = TRUE)
@@ -391,10 +337,6 @@ summarize_raster <- function(raster, name) {
   )
 }
 
-
-library(GGally)
-
-# 设置主题和样式
 custom_theme <- function() {
   theme_minimal() +
     theme(
@@ -405,9 +347,9 @@ custom_theme <- function() {
 }
 
 ggpairs(combined_data[,c("Alpha_Diversity", "NDVI", "TPI", "TAS", "Elevation", "Fire_Age", "Aspect")],
-        lower = list(continuous = "points"),  # 散点图
-        diag = list(continuous = "density"),  # 密度图
-        upper = list(continuous = "cor"),     # 相关系数
+        lower = list(continuous = "points"),  
+        diag = list(continuous = "density"),  
+        upper = list(continuous = "cor"),     
         title = "Scatterplot Matrix of Environmental Variables and Shannon Index") +
   theme_minimal() +
   theme(
@@ -454,17 +396,12 @@ ggpairs(combined_data1_clean,
   theme_minimal()
 
 
-
-
-
-
-#0236
 combined_data <- merge(dependent_df, independent_df0, by = c("x", "y"))
 combined_data <- merge(combined_data, independent_df2, by = c("x", "y"))
 combined_data <- merge(combined_data, independent_df3, by = c("x", "y"))
 combined_data <- merge(combined_data, independent_df66, by = c("x", "y"))
 colnames(combined_data) <- c("x", "y", "shannon_index", "var1", "var2", "var3","var4")
-# 构建 GWR 模型
+# build GWR models
 combined_data$x_coord <- combined_data$x
 combined_data$y_coord <- combined_data$y
 coordinates(combined_data) <- ~ x + y
@@ -478,31 +415,25 @@ summary(gwr_model)
 
 
 
-# validation rf交叉验证
-# 1. 数据准备和分割
+# validation rf
 set.seed(123)
 data_split <- initial_split(combined_data, prop = 0.8)
 train_data <- training(data_split)
 test_data <- testing(data_split)
-# 2. 创建10折交叉验证
 cv_folds <- vfold_cv(train_data, v = 10)
-# 3. RF模型设置
 rf_spec <- rand_forest(trees = 500) %>% 
   set_engine("ranger") %>% 
   set_mode("regression")
 rf_workflow <- workflow() %>%
   add_formula(shannon_index ~ var1 + var2 + var3 + var4) %>%
   add_model(rf_spec)
-# 4. GRF模型设置
 grf_spec <- rand_forest(trees = 500) %>% 
   set_engine("ranger") %>%
   set_mode("regression")
 grf_workflow <- workflow() %>%
   add_formula(shannon_index ~ var1 + var2 + var3 + var4 + x + y) %>%
   add_model(grf_spec)
-# 5. 定义评估指标
 metrics <- metric_set(rmse, rsq, mae)
-# 6. 进行交叉验证
 rf_results <- fit_resamples(
   rf_workflow,
   resamples = cv_folds,
@@ -513,17 +444,13 @@ grf_results <- fit_resamples(
   resamples = cv_folds,
   metrics = metrics
 )
-# 7. 收集并比较结果
 model_comparison <- bind_rows(
   collect_metrics(rf_results) %>% mutate(model = "RF"),
   collect_metrics(grf_results) %>% mutate(model = "GRF")
 )
-# 打印比较结果
 print(model_comparison)
 
 
-
-library(ggplot2)
 predicted_values <- gwr_model$SDF$pred
 combined_data_df <- as.data.frame(combined_data)
 combined_data <- as.data.frame(combined_data)
@@ -545,11 +472,10 @@ equation <- sprintf("y = %.4fx + %.3f\nR² = %.3f",
                     coef(lm_fit)[2], 
                     coef(lm_fit)[1],
                     r2)
-# 生成图形
 my_plot <- ggplot(combined_data, aes(x = predicted_shannon, y = shannon_index)) +
   geom_point(color = "black") +
   geom_abline(intercept = 0, slope = 1, color = "red", linetype = "dashed") +
-  geom_smooth(method = "lm", color = "black", se = FALSE) +  # 添加回归线
+  geom_smooth(method = "lm", color = "black", se = FALSE) + 
   annotate("text", 
            x = min(combined_data$predicted_shannon), 
            y = max(combined_data$shannon_index),
@@ -563,28 +489,22 @@ my_plot <- ggplot(combined_data, aes(x = predicted_shannon, y = shannon_index)) 
         panel.grid = element_blank(),
         axis.line = element_line(color = "black"))
 plot(my_plot)
-# 保存图形为 PNG 文件
 ggsave("/user/ziqitang/data_ziqi/my_plot_gwr.png", plot = my_plot, width = 8, height = 6, dpi = 300)
 
 
-# 构建 OLS 模型
 ols_model <- lm(shannon_index ~ var1 + var2 + var3 + var4, data = combined_data)
 summary(ols_model)
-
-
 combined_data$predicted_shannon_ols <- predict(ols_model, combined_data)
-
 lm_fit_ols <- lm(shannon_index ~ predicted_shannon_ols, data = combined_data)
 r2_ols <- summary(lm_fit_ols)$r.squared
 equation_ols <- sprintf("y = %.4fx + %.3f\nR² = %.3f", 
                         coef(lm_fit_ols)[2], 
                         coef(lm_fit_ols)[1],
                         r2_ols)
-# 生成 OLS 图形
 my_ols_plot <- ggplot(combined_data, aes(x = predicted_shannon_ols, y = shannon_index)) +
   geom_point(color = "black") +
   geom_abline(intercept = 0, slope = 1, color = "red", linetype = "dashed") +
-  geom_smooth(method = "lm", color = "black", se = FALSE) +  # 添加回归线
+  geom_smooth(method = "lm", color = "black", se = FALSE) + 
   annotate("text", 
            x = min(combined_data$predicted_shannon_ols), 
            y = max(combined_data$shannon_index),
@@ -598,7 +518,6 @@ my_ols_plot <- ggplot(combined_data, aes(x = predicted_shannon_ols, y = shannon_
         panel.grid = element_blank(),
         axis.line = element_line(color = "black"))
 plot(my_ols_plot)
-# 保存 OLS 图形为 PNG 文件
 ggsave("/user/ziqitang/data_ziqi/my_plot_ols.png", plot = my_ols_plot, width = 8, height = 6, dpi = 300)
 # Determine the global x and y range for both plots
 x_range <- range(c(combined_data$predicted_shannon, combined_data$predicted_shannon_ols), na.rm = TRUE)
@@ -647,58 +566,44 @@ my_ols_plot <- ggplot(combined_data, aes(x = predicted_shannon_ols, y = shannon_
 plot(my_ols_plot)
 # Save OLS plot
 ggsave("/user/ziqitang/data_ziqi/my_plot_ols.png", plot = my_ols_plot, width = 8, height = 6, dpi = 300)
-# 加载必要的库
-library(ggplot2)
-library(randomForest)
 
-# 1. 构建 GRF 模型
-set.seed(123)  # 设置随机种子，保证结果可复现
 
-# 数据准备：增加坐标
+# GRF models
+set.seed(123) 
 combined_data$x_coord <- combined_data$x
 combined_data$y_coord <- combined_data$y
-
-# 构建 GRF 模型
 grf_model <- randomForest(shannon_index ~ var1 + var2 + var3 + var4 + x_coord + y_coord, 
                           data = combined_data, 
-                          ntree = 500,    # 决策树数量
-                          importance = TRUE)  # 追踪变量重要性
-
-# 2. 生成预测值
+                          ntree = 500,    
+                          importance = TRUE) 
 combined_data$predicted_shannon_grf <- predict(grf_model, newdata = combined_data)
-
-# 3. 计算回归线方程和R²值
 lm_fit_grf <- lm(shannon_index ~ predicted_shannon_grf, data = combined_data)
 r2_grf <- summary(lm_fit_grf)$r.squared
 equation_grf <- sprintf("y = %.4fx + %.3f\nR² = %.3f", 
                         coef(lm_fit_grf)[2], 
                         coef(lm_fit_grf)[1],
                         r2_grf)
-
-# 4. 生成 GRF 散点图
 my_grf_plot <- ggplot(combined_data, aes(x = predicted_shannon_grf, y = shannon_index)) +
-  geom_point(color = "black") +  # 绘制散点
-  geom_abline(intercept = 0, slope = 1, color = "red", linetype = "dashed") +  # 添加45度线
-  geom_smooth(method = "lm", color = "black", se = FALSE) +  # 添加回归线
+  geom_point(color = "black") + 
+  geom_abline(intercept = 0, slope = 1, color = "red", linetype = "dashed") +
+  geom_smooth(method = "lm", color = "black", se = FALSE) +  
   annotate("text", 
            x = min(combined_data$predicted_shannon_grf), 
            y = max(combined_data$shannon_index),
            label = equation_grf,
            hjust = 0, 
-           vjust = 1) +  # 添加方程和R²值
+           vjust = 1) +  
   labs(x = "Predicted Values (GRF)",
        y = "Actual Values (Shannon Index)") +
   theme_minimal() +
   theme(
     plot.title = element_text(hjust = 0.5),
-    panel.grid = element_blank(),       # 移除网格线
-    axis.line = element_line(color = "black")  # 添加坐标轴线
+    panel.grid = element_blank(),      
+    axis.line = element_line(color = "black") 
   )
 
-# 5. 显示图形
 plot(my_grf_plot)
 ggsave("/user/ziqitang/data_ziqi/my_plot_grf.png", plot = my_grf_plot, width = 8, height = 6, dpi = 300)
-# 加载必要的库
 
 
 
@@ -707,22 +612,15 @@ ggsave("/user/ziqitang/data_ziqi/my_plot_grf.png", plot = my_grf_plot, width = 8
 
 
 
-# 获取GWR模型的预测值
-predictions_gwr <- gwr_model$SDF$pred  # 假设gwr_model存储了预测值在SDF$pred中
+
+predictions_gwr <- gwr_model$SDF$pred 
 actual_values <- combined_data$shannon_index
 tss <- sum((actual_values - mean(actual_values))^2)
 rss <- sum((actual_values - predictions_gwr)^2)
 r_squared_gwr <- 1 - (rss / tss)
 print(paste("GWR R-squared:", r_squared_gwr))
-
-
-# Extract R-squared values from the GWR model
 combined_data$r_squared <- gwr_model$SDF$localR2
-
-# Ensure combined_data has coordinates in standard columns (x and y)
 combined_data <- as.data.frame(combined_data)  # Convert back to a data frame if needed
-
-# Plot using ggplot2
 ggplot(data = combined_data, aes(x = x, y = y, color = r_squared)) +
   geom_point(size = 3) +  # Plot points with size adjustment
   scale_color_gradientn(colors = c("blue", "green", "yellow", "red"),
@@ -777,17 +675,17 @@ R_squared_gwr <- ggplot(data = combined_data, aes(x = x, y = y, fill = r_squared
   labs(title = "Local R² Values of the GWR Model",
        x = "Longitude",
        y = "Latitude") +
-  theme_void() +  # 移除背景和多余的轴
+  theme_void() +  
   guides(
     fill = guide_colorbar(
-      barwidth = 1,       # 设置颜色条宽度
-      barheight = 15      # 设置颜色条高度
+      barwidth = 1,       
+      barheight = 15     
     )
   ) +
   theme(
-    legend.position = "right",      # 确保颜色条在右侧
-    legend.title = element_blank(), # 删除标题
-    legend.text = element_text(size = 10)  # 设置刻度字体大小
+    legend.position = "right",      
+    legend.title = element_blank(), 
+    legend.text = element_text(size = 10) 
   ) 
 plot(R_squared_gwr)
 # Save the plot to file
@@ -797,7 +695,7 @@ ggsave("/user/ziqitang/data_ziqi/R_squared_value.png", plot = R_squared_gwr, wid
 
 
 
-# 标准化自变量和因变量
+
 combined_data$shannon_index <- scale(combined_data$shannon_index)
 combined_data$var1 <- scale(combined_data$var1)
 combined_data$var2 <- scale(combined_data$var2)
@@ -931,13 +829,6 @@ ggplot(combined_data, aes(x = predicted_shannon_ols, y = shannon_index)) +
     axis.line = element_line(color = "black") 
   )
 
-
-
-
-
-
-
-
 # Extract coefficients and p-values
 coefficients <- ols_summary$coefficients
 coef_table <- data.frame(
@@ -947,16 +838,6 @@ coef_table <- data.frame(
   t.value = coefficients[, "t value"],
   p.value = coefficients[, "Pr(>|t|)"]
 )
-
-
-
-
-summary(combined_data@data)
-any(is.na(combined_data@data))  
-
-
-combined_data <- combined_data[complete.cases(combined_data@data), ]
-
 
 
 # Fit the GWR model (assuming you've calculated gwr_bandwidth as shown earlier)
@@ -981,8 +862,6 @@ rss <- sum((combined_data$shannon_index - predictions_gwr)^2)
 # Manually calculate AICc
 aicc_gwr <- n * log(rss / n) + 2 * p + (2 * p * (p + 1)) / (n - p - 1)
 print(paste("Manually calculated GWR AICc:", aicc_gwr))
-
-
 
 #GRF
 library(randomForest)
@@ -1204,7 +1083,7 @@ vif_values <- vif(vif_model)  # Calculate VIF for each predictor
 print("VIF values for each variable:")
 print(vif_values)
 
-# 三个图片组合在一起
+
 # OLS 地图
 min_value <- min(c(
   min(combined_data_df$predicted_shannon_ols, na.rm = TRUE),
@@ -1240,7 +1119,7 @@ plot_rf <- ggplot(combined_data_df, aes(x = x_coord, y = y_coord, fill = predict
     axis.ticks = element_blank(),
     axis.line = element_blank(),
     axis.title = element_blank(),
-    legend.position = "none" # 隐藏颜色条
+    legend.position = "none" 
   )
 plot(plot_rf)
 
