@@ -19,7 +19,7 @@ This work demonstrates the value of geographical statistical methods in biodiver
 ## Image Gallery
 
 <div align="center">
-  <img width="345" alt="f2d62c74bc173a589aba04019844eab" src="https://github.com/user-attachments/assets/fb7e60fe-2330-4a7f-a7e2-2018560baf90" />
+  <img width="345" alt="f2d62c74bc173a589aba04019844eab" src="https://github.com/user-attachments/assets/fb7e60fe-2330-4a7f-a7e2-2018560baf90" /><br>
   <img width="338" alt="4767d9afbb230a64125dada361612c6" src="https://github.com/user-attachments/assets/a4745bd9-ea65-4ca3-80bf-0cab114b4a15" />
 </div>
 
