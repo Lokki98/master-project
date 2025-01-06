@@ -8,31 +8,28 @@ This repository contains the implementation and analysis of spatial patterns of 
 4. **Geographically Random Forest (GRF)**
 
 # Data Description
+Satellite Imagery Description
+Description: The satellite imagery was sourced from the EMIT L2A product, acquired on January 19, 2023, with a spatial resolution of 60x60 meters.
+
 Digital Elevation Model (DEM)
 Source: Copernicus satellite data
-Year: 2019
 Description: The DEM was generated using Copernicus data to represent the terrain elevation.
+
 Topographic Position Index (TPI)
-
 Calculation: Derived from elevation data using QGIS software.
-Purpose: Provides information on terrain features, such as ridges and valleys.
-Mean Daily Air Temperature (TAS)
 
+Mean Daily Air Temperature (TAS)
 Source: CHELSA database (Climatologies at High Resolution for Earth's Land Surface Areas).
 Description: Represents mean daily air temperature values across the region.
-Land Classification Data
 
-Source: Copernicus Land Monitoring Service.
-Description: Provides classifications of land cover types.
 Fire Age Dataset
-
 Description: Records the time elapsed since the most recent fire event for each spatial pixel.
-Normalized Difference Vegetation Index (NDVI)
 
+Normalized Difference Vegetation Index (NDVI)
 Source: MODIS NDVI data.
 Description: Indicates vegetation health and coverage using remote sensing data.
-Aspect Data
 
+Aspect Data
 Derived From: Digital Elevation Model (DEM).
 Description: Represents the direction of slope (e.g., north, south) based on elevation.
 
